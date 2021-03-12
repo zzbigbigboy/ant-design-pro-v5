@@ -16,17 +16,11 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 const { Option } = Select;
 // import { useIntl, FormattedMessage } from 'umi'; // 本地化
 
-export type FormValueType = {
-  name?: string;
-  remark?: string;
-  uid?: string;
-} & Partial<API.AssetInfo>;
-
 export type UpdateFormProps = {
-  onCancel: (flag?: boolean, formVals?: FormValueType) => void;
-  onSubmit: (values: FormValueType) => Promise<void>;
+  onCancel: (flag?: boolean) => void;
+  onSubmit: (values: APP.AssetInfo) => Promise<void>;
   updateVisible: boolean;
-  values: Partial<API.AssetInfo>;
+  values: Partial<APP.AssetInfo>;
 };
 
 const residences = [
@@ -93,7 +87,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
 
   const onFinish = (values: any) => {
     console.log('Received values of form: ', values);
-    props.onSubmit(values)
+    props.onSubmit({...props.values, ...values} as APP.AssetInfo)
   };
 
   const prefixSelector = (
@@ -158,7 +152,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           <Input />
         </Form.Item>
 
-        <Form.Item
+        {props.values.uid ? '' : <Form.Item
           name="password"
           label="密码"
           rules={[
@@ -170,9 +164,9 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           hasFeedback
         >
           <Input.Password />
-        </Form.Item>
+        </Form.Item>}
 
-        <Form.Item
+        {props.values.uid ? '' : <Form.Item
           name="confirm"
           label="确认密码"
           dependencies={['password']}
@@ -193,7 +187,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           ]}
         >
           <Input.Password />
-        </Form.Item>
+        </Form.Item>}
 
         <Form.Item
           name="name"
@@ -238,7 +232,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           </AutoComplete>
         </Form.Item>
 
-        <Form.Item label="验证码" extra="我们必须确认是您本人">
+        {props.values.uid ? '' : <Form.Item label="验证码" extra="我们必须确认是您本人">
           <Row gutter={8}>
             <Col span={12}>
               <Form.Item
@@ -253,9 +247,9 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
               <Button>获取验证码</Button>
             </Col>
           </Row>
-        </Form.Item>
+        </Form.Item>}
 
-        <Form.Item
+        {props.values.uid ? '' : <Form.Item
           name="agreement"
           valuePropName="checked"
           rules={[
@@ -269,7 +263,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           <Checkbox>
             我已阅读该<a href="" target="_blank">协议</a>
           </Checkbox>
-        </Form.Item>
+        </Form.Item>}
         <Form.Item {...tailFormItemLayout}>
           <Button type="primary" htmlType="submit">
             提交

@@ -1,13 +1,13 @@
 // import { FormattedMessage } from '@/.umi/plugin-locale/localeExports';
 import { FormattedMessage } from '@/.umi/plugin-locale/localeExports';
-import { assets, removeAsset } from '@/services/asset.service';
+import { assets, removeAsset, updateAsset } from '@/services/asset.service';
 import { PlusOutlined } from '@ant-design/icons';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import ProTable, { ActionType, ProColumns } from '@ant-design/pro-table';
 import { Table, Space, Button, message } from 'antd';
 import React, { useRef, useState } from 'react';
 import UpdateForm from './components/UpdateFrom'
-const expandable = { expandedRowRender: (record: API.AssetInfo) => <p>{record.name}</p> };
+const expandable = { expandedRowRender: (record: APP.AssetInfo) => <p>{record.name}</p> };
 const title = () => 'Here is title';
 const showHeader = true;
 
@@ -22,7 +22,7 @@ const handleRemove = async (selectedRows: APP.AssetInfo[]) => {
     if (!selectedRows) return true;
     try {
         await removeAsset({
-            uid: selectedRows.map((row) => row.uid),
+            uids: selectedRows.map((row) => row.uid),
         });
         hide();
         message.success('删除成功，即将刷新');
@@ -34,11 +34,31 @@ const handleRemove = async (selectedRows: APP.AssetInfo[]) => {
     }
 };
 
+/**
+ * 修改节点
+ *
+ * @param info
+ */
+const handleUpdate = async (info: APP.AssetInfo) => {
+    const hide = message.loading('正在修改');
+    if (!info) return true;
+    try {
+        await updateAsset(info);
+        hide();
+        message.success('修改成功，即将刷新');
+        return true;
+    } catch (error) {
+        hide();
+        message.error('修改失败，请重试');
+        return false;
+    }
+};
+
 
 const AssetList: React.FC = () => {
     const [updateVisible, hanldeUpdateVisible] = useState<boolean>(false)
-    const [currentRow, setCurrenRow] = useState<API.AssetInfo>({} as API.AssetInfo)
-    const [selectedRowsState, setSelectedRows] = useState<API.AssetInfo[]>([]);
+    const [currentRow, setCurrenRow] = useState<APP.AssetInfo>({} as APP.AssetInfo)
+    const [selectedRowsState, setSelectedRows] = useState<APP.AssetInfo[]>([]);
     const [tableState, setTableState] = useState({
         bordered: false,
         loading: false,
@@ -66,6 +86,16 @@ const AssetList: React.FC = () => {
             key: 'phone',
         },
         {
+            title: '个人网站',
+            dataIndex: 'website',
+            key: 'website',
+        },
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            key: 'email',
+        },
+        {
             title: '所在地',
             dataIndex: 'place',
             key: 'place',
@@ -73,19 +103,18 @@ const AssetList: React.FC = () => {
         {
             title: '操作',
             key: 'action',
-            render: (text, record: API.AssetInfo) => (
+            render: (text, record: APP.AssetInfo) => (
                 <Space size="middle">
                     <a onClick={() => {
                         setCurrenRow(record)
                         hanldeUpdateVisible(true)
                     }}>修改</a>
-                    <a>删除</a>
                 </Space>
             ),
         },
     ];
 
-    const data: API.AssetInfo[] = [];
+    const data: APP.AssetInfo[] = [];
 
     for (let i = 0; i < 30; i++) {
         data.push({
@@ -94,7 +123,7 @@ const AssetList: React.FC = () => {
             phone: '13340360960',
             place: 'New York No. 1 Lake Park',
             callNo: i,
-        } as API.AssetInfo)
+        } as APP.AssetInfo)
     }
 
     return (
@@ -107,6 +136,7 @@ const AssetList: React.FC = () => {
                 search={{
                     labelWidth: 120,
                 }}
+                pagination={{pageSize: 15}}
                 toolBarRender={() => [
                     <Button
                         type="primary"
@@ -161,15 +191,16 @@ const AssetList: React.FC = () => {
                 </FooterToolbar>
             )}
             {/* table */}
-            {/* <Table<API.AssetInfo> {...tableState} columns={columns} dataSource={data} rowKey="uid" /> */}
+            {/* <Table<APP.AssetInfo> {...tableState} columns={columns} dataSource={data} rowKey="uid" /> */}
             {!updateVisible || <UpdateForm
                 onSubmit={async (value) => {
-                    hanldeUpdateVisible(false);
-                    await setCurrenRow({} as API.AssetInfo)
+                    hanldeUpdateVisible(false)
+                    await setCurrenRow({} as APP.AssetInfo)
+                    await handleUpdate(value || {} as APP.AssetInfo)
                 }}
                 onCancel={() => {
                     hanldeUpdateVisible(false);
-                    setCurrenRow({} as API.AssetInfo)
+                    setCurrenRow({} as APP.AssetInfo)
                 }}
                 updateVisible={updateVisible}
                 values={currentRow}

@@ -11,7 +11,7 @@ const genList = (current: number, pageSize: number) => {
         const index = (current - 1) * 10 + i;
         tableListDataSource.push({
             uid: index.toString(),
-            name: '名称',
+            name: `名称-${i}`,
             email: '6666669@qq.com',
             psw: '123456',
             place: '成都',
@@ -105,19 +105,19 @@ function postAssets(req: Request, res: Response, u: string, b: Request) {
     }
 
     const body = (b && b.body) || req.body;
-    const { method, name, desc, key } = body;
-
+    const { method, name, desc, uids, uid } = body;
+    console.log(method)
     switch (method) {
         /* eslint no-case-declarations:0 */
         case 'delete':
-            tableListDataSource = tableListDataSource.filter((item) => key.indexOf(item.uid) === -1);
+            tableListDataSource = tableListDataSource.filter((item) => uids.indexOf(item.uid) === -1);
             break;
         case 'post':
             (() => {
                 const i = Math.ceil(Math.random() * 10000);
                 const newRule: API.AssetInfo = {
-                    uid: tableListDataSource.toString(),
-                    name: '名称',
+                    uid: i.toString(),
+                    name: `名称-${i}`,
                     email: '6666669@qq.com',
                     psw: '123456',
                     place: '成都',
@@ -135,9 +135,9 @@ function postAssets(req: Request, res: Response, u: string, b: Request) {
             (() => {
                 let newRule = {};
                 tableListDataSource = tableListDataSource.map((item) => {
-                    if (item.uid === key) {
-                        newRule = { ...item, desc, name };
-                        return { ...item, desc, name };
+                    if (item.uid === uid) {
+                        newRule = item;
+                        return item;
                     }
                     return item;
                 });
@@ -161,4 +161,5 @@ function postAssets(req: Request, res: Response, u: string, b: Request) {
 export default {
     'GET /api/assets': getAssets,
     'POST /api/assets': postAssets,
+    'DELETE /api/assets': postAssets,
 };
